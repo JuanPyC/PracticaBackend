@@ -7,13 +7,61 @@ export interface PropertyData {
   available?: boolean;
 }
 
-export const getAllProperties = async () => {
-  return await prisma.property.findMany();
+export interface PropertyFilters {
+  location?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  available?: boolean;
+  page: number;
+  limit: number;
+}
+
+export const getAllProperties = async (filters: PropertyFilters) => {
+  const { location, minPrice, maxPrice, available, page, limit } = filters;
+  const skip = (page - 1) * limit;
+
+  // Build the WHERE clause
+  const where: any = {};
+
+  if (location) {
+    where.location = {
+      contains: location,
+      mode: 'insensitive',
+    };
+  }
+
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    where.price = {};
+    if (minPrice !== undefined) where.price.gte = minPrice;
+    if (maxPrice !== undefined) where.price.lte = maxPrice;
+  }
+
+  if (available !== undefined) {
+    where.available = available;
+  }
+
+  // Get data and total count in parallel
+  const [data, total] = await Promise.all([
+    prisma.property.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.property.count({ where }),
+  ]);
+
+  return {
+    data,
+    total,
+    page,
+    limit,
+  };
 };
 
-export const getPropertyById = async (id: string) => {
+export const getPropertyById = async (id: number) => {
   return await prisma.property.findUnique({
-    where: { id: parseInt(id) }
+    where: { id }
   });
 };
 
@@ -28,21 +76,16 @@ export const createProperty = async (propertyData: PropertyData) => {
   });
 };
 
-export const updateProperty = async (id: string, propertyData: PropertyData) => {
+export const updateProperty = async (id: number, propertyData: Partial<PropertyData>) => {
   return await prisma.property.update({
-    where: { id: parseInt(id) },
-    data: {
-      title: propertyData.title,
-      price: propertyData.price,
-      location: propertyData.location,
-      available: propertyData.available
-    }
+    where: { id },
+    data: propertyData
   });
 };
 
-export const deleteProperty = async (id: string) => {
+export const deleteProperty = async (id: number) => {
   await prisma.property.delete({
-    where: { id: parseInt(id) }
+    where: { id }
   });
   return { message: 'Property deleted successfully' };
 };

@@ -3,8 +3,18 @@ import * as propertyService from '../services/property.service';
 
 export const getProperties = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const properties = await propertyService.getAllProperties();
-    res.json(properties);
+    const { location, minPrice, maxPrice, available, page, limit } = req.query as any;
+
+    const result = await propertyService.getAllProperties({
+      location,
+      minPrice,
+      maxPrice,
+      available,
+      page,
+      limit
+    });
+
+    res.json(result);
   } catch (error) {
     next(error);
   }
@@ -12,8 +22,7 @@ export const getProperties = async (req: Request, res: Response, next: NextFunct
 
 export const getProperty = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
-    if (typeof id !== 'string') return res.status(400).json({ message: 'Invalid ID' });
+    const id = (req.params as any).id;
     
     const property = await propertyService.getPropertyById(id);
     if (!property) {
@@ -36,8 +45,7 @@ export const createProperty = async (req: Request, res: Response, next: NextFunc
 
 export const updateProperty = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
-    if (typeof id !== 'string') return res.status(400).json({ message: 'Invalid ID' });
+    const id = (req.params as any).id;
 
     const property = await propertyService.updateProperty(id, req.body);
     if (!property) {
@@ -51,13 +59,14 @@ export const updateProperty = async (req: Request, res: Response, next: NextFunc
 
 export const deleteProperty = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
-    if (typeof id !== 'string') return res.status(400).json({ message: 'Invalid ID' });
+    const id = (req.params as any).id;
 
     const result = await propertyService.deleteProperty(id);
     res.json(result);
   } catch (error: any) {
-    if (error.message === 'Property not found') return res.status(404).json({ message: error.message });
+    if (error.message.includes('Record to delete does not exist')) {
+       return res.status(404).json({ message: 'Property not found' });
+    }
     next(error);
   }
 };
