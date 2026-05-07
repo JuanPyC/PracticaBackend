@@ -1,5 +1,7 @@
 import prisma from '../db';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import config from '../config';
 
 export const login = async (email: string, password: string) => {
   const user = await prisma.user.findUnique({
@@ -15,10 +17,11 @@ export const login = async (email: string, password: string) => {
     throw new Error('Invalid credentials');
   }
 
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    message: "Login successful (JWT omitted for now)"
-  };
+  const token = jwt.sign(
+    { id: user.id, email: user.email },
+    config.jwtSecret,
+    { expiresIn: '24h' }
+  );
+
+  return { token };
 };

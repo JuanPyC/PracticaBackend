@@ -12,7 +12,10 @@ export const getProperties = async (req: Request, res: Response, next: NextFunct
 
 export const getProperty = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const property = await propertyService.getPropertyById(req.params.id);
+    const { id } = req.params;
+    if (typeof id !== 'string') return res.status(400).json({ message: 'Invalid ID' });
+    
+    const property = await propertyService.getPropertyById(id);
     if (!property) {
       return res.status(404).json({ message: 'Property not found' });
     }
@@ -33,7 +36,10 @@ export const createProperty = async (req: Request, res: Response, next: NextFunc
 
 export const updateProperty = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const property = await propertyService.updateProperty(req.params.id, req.body);
+    const { id } = req.params;
+    if (typeof id !== 'string') return res.status(400).json({ message: 'Invalid ID' });
+
+    const property = await propertyService.updateProperty(id, req.body);
     if (!property) {
       return res.status(404).json({ message: 'Property not found' });
     }
@@ -45,7 +51,10 @@ export const updateProperty = async (req: Request, res: Response, next: NextFunc
 
 export const deleteProperty = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await propertyService.deleteProperty(req.params.id);
+    const { id } = req.params;
+    if (typeof id !== 'string') return res.status(400).json({ message: 'Invalid ID' });
+
+    const result = await propertyService.deleteProperty(id);
     res.json(result);
   } catch (error: any) {
     if (error.message === 'Property not found') return res.status(404).json({ message: error.message });

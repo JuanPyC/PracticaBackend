@@ -15,7 +15,7 @@ model Property {
   price     Decimal
   location  String
   available Boolean  @default(true)
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("properties")
 }
@@ -25,7 +25,7 @@ model User {
   email     String   @unique
   password  String
   name      String?
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("users")
 }
