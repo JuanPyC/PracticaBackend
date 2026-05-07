@@ -1,8 +1,8 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const routes = require('./routes');
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import routes from './routes';
 
 const app = express();
 
@@ -16,7 +16,7 @@ app.use(express.json());
 app.use('/api/v1', routes);
 
 // Error Handling Middleware
-app.use((err, req, res, next) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
   res.status(500).json({
     message: 'Internal Server Error',
@@ -24,4 +24,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-module.exports = app;
+export default app;
